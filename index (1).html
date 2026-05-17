@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SolaX Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sun:#FFB800;--sun2:#FF8C00;--grid:#00D4FF;--bat:#00FF88;
+    --eps:#FF7744;--bg:#050D1A;--s1:#0A1628;--s2:#0F1F3D;
+    --border:rgba(0,212,255,0.12);--text:#E8F4FF;--dim:#4A6A8A;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:'Cairo',Tahoma,sans-serif;min-height:100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 10%,rgba(255,184,0,.04) 0%,transparent 50%),
+      radial-gradient(ellipse at 80% 80%,rgba(0,212,255,.04) 0%,transparent 50%),
+      linear-gradient(rgba(0,212,255,.025) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(0,212,255,.025) 1px,transparent 1px);
+    background-size:100% 100%,100% 100%,36px 36px,36px 36px;
+  }
+  .wrap{max-width:860px;margin:0 auto;padding:18px;}
+  header{display:flex;justify-content:space-between;align-items:center;padding-bottom:16px;margin-bottom:20px;border-bottom:1px solid var(--border);}
+  .logo{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--sun);letter-spacing:3px;text-shadow:0 0 20px rgba(255,184,0,.4);}
+  .logo span{color:var(--grid);}
+  .hbadge{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--dim);background:var(--s1);padding:6px 14px;border-radius:20px;border:1px solid var(--border);}
+  .dot{width:8px;height:8px;border-radius:50%;background:#333;transition:.3s;}
+  .dot.ok{background:var(--bat);box-shadow:0 0 6px var(--bat);animation:blink 2s infinite;}
+  .dot.err{background:#FF4444;}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+  .hero{text-align:center;padding:10px 0 18px;}
+  .sun-wrap{width:130px;height:130px;margin:0 auto 12px;position:relative;display:flex;align-items:center;justify-content:center;}
+  .sun-wrap::before{content:'';position:absolute;inset:-5px;border-radius:50%;background:conic-gradient(var(--sun) 0%,var(--sun2) 50%,var(--sun) 100%);animation:spin 5s linear infinite;opacity:.55;}
+  .sun-wrap::after{content:'';position:absolute;inset:-16px;border-radius:50%;background:radial-gradient(circle,rgba(255,184,0,.12),transparent 70%);animation:breathe 3s ease-in-out infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  @keyframes breathe{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.12);opacity:1}}
+  .sun-inner{width:100%;height:100%;border-radius:50%;background:var(--s1);border:2px solid var(--s2);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;z-index:1;}
+  .pv-val{font-family:'Orbitron',monospace;font-size:26px;font-weight:700;color:var(--sun);text-shadow:0 0 14px rgba(255,184,0,.6);line-height:1;}
+  .pv-unit{font-size:11px;color:var(--dim);margin-top:3px;letter-spacing:1px;}
+  .status-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:13px;font-weight:600;margin-top:6px;}
+  .s-normal{background:rgba(0,255,136,.12);color:var(--bat);border:1px solid rgba(0,255,136,.3);}
+  .s-wait{background:rgba(255,184,0,.12);color:var(--sun);border:1px solid rgba(255,184,0,.3);}
+  .s-fault{background:rgba(255,68,68,.12);color:#FF6666;border:1px solid rgba(255,68,68,.3);}
+  .s-offgrid{background:rgba(0,212,255,.12);color:var(--grid);border:1px solid rgba(0,212,255,.3);}
+  .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px;}
+  .card{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:18px 16px;position:relative;overflow:hidden;transition:border-color .3s,transform .2s;}
+  .card:hover{border-color:rgba(0,212,255,.28);transform:translateY(-2px);}
+  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:14px 14px 0 0;}
+  .c-sun::before{background:linear-gradient(90deg,var(--sun),var(--sun2));}
+  .c-bat::before{background:linear-gradient(90deg,var(--bat),#00AA55);}
+  .c-grid::before{background:linear-gradient(90deg,var(--grid),#0088AA);}
+  .c-eps::before{background:linear-gradient(90deg,var(--eps),#CC4400);}
+  .cicon{font-size:24px;margin-bottom:8px;display:block;}
+  .clabel{font-size:11px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;}
+  .cval{font-family:'Orbitron',monospace;font-size:22px;font-weight:700;line-height:1;}
+  .cunit{font-family:'Cairo',sans-serif;font-size:12px;color:var(--dim);margin-right:3px;}
+  .csub{font-size:12px;color:var(--dim);margin-top:7px;}
+  .v-sun{color:var(--sun);text-shadow:0 0 10px rgba(255,184,0,.4);}
+  .v-bat{color:var(--bat);text-shadow:0 0 10px rgba(0,255,136,.4);}
+  .v-grid{color:var(--grid);text-shadow:0 0 10px rgba(0,212,255,.4);}
+  .v-eps{color:var(--eps);}
+  .v-gray{color:#8899AA;}
+  .bat-bar{height:7px;background:var(--s2);border-radius:4px;margin-top:9px;overflow:hidden;}
+  .bat-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--bat),#00AA55);transition:width 1s ease;box-shadow:0 0 8px rgba(0,255,136,.35);}
+  .summary{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px;}
+  .sum-title{font-size:13px;color:var(--dim);letter-spacing:1px;margin-bottom:14px;}
+  .sum-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border);}
+  .sum-row:last-child{border-bottom:none;}
+  .sum-name{font-size:13px;color:var(--dim);}
+  .sum-val{font-family:'Orbitron',monospace;font-size:15px;font-weight:700;}
+  .footer{display:flex;justify-content:space-between;align-items:center;background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:12px 18px;}
+  .f-info{font-size:11px;color:var(--dim);line-height:1.7;}
+  .f-info span{color:var(--text);}
+  .rbtn{background:linear-gradient(135deg,var(--sun),var(--sun2));color:#000;border:none;padding:8px 20px;border-radius:8px;font-family:'Cairo',sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:opacity .2s,transform .1s;}
+  .rbtn:hover{opacity:.85;}
+  .rbtn:active{transform:scale(.97);}
+  .rbtn:disabled{opacity:.35;cursor:not-allowed;}
+  .loading{text-align:center;padding:60px 20px;color:var(--dim);}
+  .spinner{width:38px;height:38px;margin:0 auto 14px;border:3px solid var(--border);border-top-color:var(--sun);border-radius:50%;animation:spin .8s linear infinite;}
+  .errbox{background:rgba(255,68,68,.08);border:1px solid rgba(255,68,68,.25);border-radius:12px;padding:22px;text-align:center;color:#FF8888;font-size:14px;line-height:1.8;margin-bottom:14px;}
+  @media(max-width:580px){.g3{grid-template-columns:repeat(2,1fr);}.cval{font-size:18px;}.pv-val{font-size:20px;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">SOLAR<span>X</span></div>
+    <div class="hbadge"><div class="dot" id="dot"></div><span id="stxt">جاري الاتصال...</span></div>
+  </header>
+  <div id="main"><div class="loading"><div class="spinner"></div><div>جاري تحميل بيانات الجهاز...</div></div></div>
+  <div class="footer">
+    <div class="f-info">آخر تحديث: <span id="lastUp">—</span><br>SN: SNWVR2LQ3E</div>
+    <button class="rbtn" id="rbtn" onclick="load()">🔄 تحديث</button>
+  </div>
+</div>
+<script>
+const TOKEN   = "202603160831272691378815";
+const WIFI_SN = "SNWVR2LQ3E";
+
+// corsproxy.io يمرر الطلب مع headers كاملة
+const TARGET  = "https://global.solaxcloud.com/api/v2/dataAccess/realtimeInfo/get";
+const PROXY   = "https://corsproxy.io/?" + encodeURIComponent(TARGET);
+
+const STATUS={
+  100:{l:"انتظار",c:"s-wait"},101:{l:"فحص ذاتي",c:"s-wait"},
+  102:{l:"عمل طبيعي ✓",c:"s-normal"},103:{l:"خطأ مؤقت",c:"s-fault"},
+  104:{l:"خطأ دائم",c:"s-fault"},105:{l:"تحديث",c:"s-wait"},
+  107:{l:"Off-grid ⚡",c:"s-offgrid"},109:{l:"نوم",c:"s-wait"},
+  110:{l:"استعداد",c:"s-wait"},150:{l:"استخدام ذاتي",c:"s-normal"},
+  151:{l:"وقت إجباري",c:"s-normal"},152:{l:"احتياط",c:"s-normal"},
+  153:{l:"أولوية تغذية",c:"s-normal"},
+};
+const f=(v,d=1)=>(v==null||isNaN(+v))?"—":(+v).toFixed(d);
+
+function render(r){
+  const pv=(r.powerdc1||0)+(r.powerdc2||0);
+  const st=STATUS[+r.inverterStatus]||{l:`حالة ${r.inverterStatus}`,c:"s-wait"};
+  const fp=r.feedinpower, bp=r.batPower, soc=r.soc;
+  const gridTxt=fp>0?"تصدير ⬆":fp<0?"استيراد ⬇":"—";
+  const batTxt=bp==null?"—":bp>0?"شحن ⬆":bp<0?"تفريغ ⬇":"ثابت";
+  const peps=r.peps1??r.peps2??r.peps3;
+  return `
+  <div class="hero">
+    <div class="sun-wrap"><div class="sun-inner">
+      <div class="pv-val">${f(pv,0)}</div>
+      <div class="pv-unit">واط • PV</div>
+    </div></div>
+    <div style="font-size:13px;color:var(--dim)">طاقة الألواح الشمسية الكلية</div>
+    <div class="status-pill ${st.c}">${st.l}</div>
+  </div>
+  <div class="g3">
+    <div class="card c-sun"><span class="cicon">⚡</span><div class="clabel">طاقة AC</div><div class="cval v-sun">${f(r.acpower,0)}<span class="cunit">W</span></div><div class="csub">الإخراج الحالي</div></div>
+    <div class="card c-bat"><span class="cicon">🔋</span><div class="clabel">البطارية</div><div class="cval v-bat">${soc!=null?f(soc,0):"—"}<span class="cunit">%</span></div><div class="bat-bar"><div class="bat-fill" style="width:${soc??0}%"></div></div><div class="csub">${batTxt} ${bp!=null?"• "+f(Math.abs(bp),0)+" W":""}</div></div>
+    <div class="card c-grid"><span class="cicon">🔌</span><div class="clabel">الشبكة</div><div class="cval v-grid">${f(Math.abs(fp),0)}<span class="cunit">W</span></div><div class="csub">${gridTxt}</div></div>
+  </div>
+  <div class="g3">
+    <div class="card c-sun"><span class="cicon">☀️</span><div class="clabel">PV1</div><div class="cval v-sun">${f(r.powerdc1,0)}<span class="cunit">W</span></div></div>
+    <div class="card c-sun"><span class="cicon">☀️</span><div class="clabel">PV2</div><div class="cval v-sun">${f(r.powerdc2,0)}<span class="cunit">W</span></div></div>
+    <div class="card c-eps"><span class="cicon">🏠</span><div class="clabel">EPS (حمل)</div><div class="cval v-eps">${peps!=null?f(peps,0):"—"}<span class="cunit">W</span></div><div class="csub">الطاقة الداخلية</div></div>
+  </div>
+  <div class="summary">
+    <div class="sum-title">📊 ملخص الطاقة</div>
+    <div class="sum-row"><span class="sum-name">☀️ إنتاج اليوم</span><span class="sum-val v-sun">${f(r.yieldtoday,2)} <span style="font-size:11px;color:var(--dim)">kWh</span></span></div>
+    <div class="sum-row"><span class="sum-name">📦 إجمالي الإنتاج</span><span class="sum-val v-sun">${f(r.yieldtotal,1)} <span style="font-size:11px;color:var(--dim)">kWh</span></span></div>
+    <div class="sum-row"><span class="sum-name">⬆️ تصدير للشبكة</span><span class="sum-val v-grid">${f(r.feedinenergy,1)} <span style="font-size:11px;color:var(--dim)">kWh</span></span></div>
+    <div class="sum-row"><span class="sum-name">⬇️ استيراد من الشبكة</span><span class="sum-val v-grid">${f(r.consumeenergy,1)} <span style="font-size:11px;color:var(--dim)">kWh</span></span></div>
+    <div class="sum-row"><span class="sum-name">🔋 حالة البطارية</span><span class="sum-val ${r.batStatus=="0"?"v-bat":r.batStatus=="1"?"":"v-gray"}">${r.batStatus=="0"?"طبيعي ✓":r.batStatus=="1"?"خطأ ✗":r.batStatus=="2"?"غير متصل":"—"}</span></div>
+    <div class="sum-row"><span class="sum-name">🕒 آخر رفع</span><span class="sum-val v-gray" style="font-size:12px">${r.uploadTime||"—"}</span></div>
+  </div>`;
+}
+
+async function load(){
+  const btn=document.getElementById("rbtn"),dot=document.getElementById("dot"),stxt=document.getElementById("stxt");
+  btn.disabled=true; btn.textContent="⏳ جاري...";
+  dot.className="dot"; stxt.textContent="جاري الاتصال...";
+  try{
+    const res = await fetch(PROXY, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "tokenId": TOKEN,
+        "x-cors-headers": JSON.stringify({"tokenId": TOKEN})
+      },
+      body: JSON.stringify({ wifiSn: WIFI_SN })
+    });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    if(!json.success) throw new Error(json.exception || "فشل الاتصال");
+    document.getElementById("main").innerHTML = render(json.result);
+    dot.className="dot ok"; stxt.textContent="متصل";
+    document.getElementById("lastUp").textContent = new Date().toLocaleTimeString("ar-IQ");
+  }catch(e){
+    document.getElementById("main").innerHTML=`
+      <div class="errbox">
+        ⚠️ تعذّر الاتصال<br>
+        <span style="font-size:12px;opacity:.7">${e.message}</span>
+      </div>`;
+    dot.className="dot err"; stxt.textContent="خطأ";
+  }
+  btn.disabled=false; btn.textContent="🔄 تحديث";
+}
+load();
+setInterval(load, 5*60*1000);
+</script>
+</body>
+</html>
