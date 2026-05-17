@@ -822,6 +822,8 @@ function renderAll(r){
   document.getElementById("uploadT").textContent=r.uploadTime||"—";
 }
 
+function load(){ return _load(); }
+
 async function _load(){
   const btn=document.getElementById("rbtn"),dot=document.getElementById("dot"),stxt=document.getElementById("stxt");
   btn.disabled=true; btn.textContent="⏳ جاري...";
