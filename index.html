@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لوحة تحكم الطاقة الشمسية</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --sun: #FFB703;
+      --sun-glow: #FB8500;
+      --green: #06D6A0;
+      --blue: #118AB2;
+      --bg: #0a0e1a;
+      --card: #111827;
+      --card2: #1a2236;
+      --border: rgba(255,183,3,0.15);
+      --text: #e8eaf0;
+      --muted: #6b7a99;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Cairo', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated starfield */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 10% 20%, rgba(255,183,3,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 80% 10%, rgba(6,214,160,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 50% 80%, rgba(17,138,178,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 30% 60%, rgba(255,183,3,0.2) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 70%, rgba(6,214,160,0.2) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 36px;
+      position: relative;
+    }
+
+    .sun-icon {
+      font-size: 56px;
+      display: block;
+      animation: spin 20s linear infinite;
+      filter: drop-shadow(0 0 20px var(--sun));
+      margin-bottom: 8px;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    header h1 {
+      font-family: 'Cairo', sans-serif;
+      font-size: clamp(1.6rem, 5vw, 2.4rem);
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--sun), var(--sun-glow));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 1px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+
+    /* Status bar */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 8px 18px;
+      font-size: 0.85rem;
+    }
+
+    .dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .dot.offline { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    #uploadTime, #inverterSN {
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    /* Main metrics */
+    .hero-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .metric-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px 20px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 32px rgba(255,183,3,0.1);
+    }
+
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--accent, var(--sun));
+    }
+
+    .metric-card .icon {
+      font-size: 2rem;
+      margin-bottom: 12px;
+      display: block;
+      filter: drop-shadow(0 0 8px var(--accent, var(--sun)));
+    }
+
+    .metric-card .label {
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-bottom: 6px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .metric-card .value {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 700;
+      color: var(--accent, var(--sun));
+      line-height: 1;
+    }
+
+    .metric-card .unit {
+      font-size: 0.9rem;
+      color: var(--muted);
+      font-family: 'Cairo', sans-serif;
+      font-weight: 400;
+      margin-top: 4px;
+    }
+
+    .metric-card .sub-value {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .metric-card .sub-value span {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* PV Panels row */
+    .section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--sun);
+      margin: 24px 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .pv-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .pv-card {
+      background: var(--card2);
+      border: 1px solid rgba(255,183,3,0.1);
+      border-radius: 14px;
+      padding: 18px 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pv-label {
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .pv-value {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--sun);
+    }
+
+    .pv-unit { font-size: 0.8rem; color: var(--muted); margin-right: 4px; }
+
+    .pv-amp {
+      font-size: 0.85rem;
+      color: var(--green);
+      margin-top: 4px;
+    }
+
+    /* Battery */
+    .battery-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 500px) {
+      .battery-section { grid-template-columns: 1fr; }
+    }
+
+    .battery-card {
+      background: var(--card2);
+      border: 1px solid rgba(6,214,160,0.2);
+      border-radius: 14px;
+      padding: 20px;
+    }
+
+    .battery-visual {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .battery-body {
+      width: 60px; height: 28px;
+      border: 2px solid var(--green);
+      border-radius: 5px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .battery-body::after {
+      content: '';
+      position: absolute;
+      right: -6px; top: 50%;
+      transform: translateY(-50%);
+      width: 5px; height: 12px;
+      background: var(--green);
+      border-radius: 0 2px 2px 0;
+    }
+
+    .battery-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), #00f5a0);
+      transition: width 1s ease;
+      border-radius: 3px;
+    }
+
+    .battery-pct {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .battery-detail {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .battery-detail span { color: var(--text); font-weight: 600; }
+
+    /* EPS row */
+    .eps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .eps-card {
+      background: var(--card2);
+      border: 1px solid rgba(17,138,178,0.2);
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .eps-label { font-size: 0.75rem; color: var(--muted); font-weight: 700; text-transform: uppercase; margin-bottom: 6px; }
+    .eps-value { font-family: 'Orbitron', monospace; font-size: 1.3rem; font-weight: 700; color: var(--blue); }
+    .eps-amp { font-size: 0.8rem; color: var(--sun); margin-top: 4px; }
+
+    /* Refresh button */
+    .refresh-btn {
+      display: block;
+      margin: 0 auto 16px;
+      background: linear-gradient(135deg, var(--sun), var(--sun-glow));
+      color: #0a0e1a;
+      font-family: 'Cairo', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border: none;
+      border-radius: 50px;
+      padding: 12px 36px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s;
+      letter-spacing: 0.5px;
+    }
+
+    .refresh-btn:hover { opacity: 0.88; transform: scale(1.03); }
+    .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Loading overlay */
+    #loader {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10,14,26,0.85);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    #loader.show { display: flex; }
+
+    .spinner {
+      width: 48px; height: 48px;
+      border: 4px solid rgba(255,183,3,0.2);
+      border-top-color: var(--sun);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    #loader p { color: var(--sun); font-size: 0.95rem; }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.78rem;
+      padding: 24px 0 8px;
+      border-top: 1px solid var(--border);
+      margin-top: 12px;
+    }
+
+    /* Error */
+    #error-msg {
+      display: none;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 12px;
+      padding: 14px 20px;
+      color: #fca5a5;
+      text-align: center;
+      margin-bottom: 16px;
+      font-size: 0.9rem;
+    }
+
+    /* Voltage hint */
+    .volt-hint {
+      font-size: 0.7rem;
+      color: var(--muted);
+      display: block;
+      margin-top: 2px;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .hero-grid { grid-template-columns: 1fr 1fr; }
+      .battery-section { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 380px) {
+      .hero-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="loader"><div class="spinner"></div><p>جاري التحديث...</p></div>
+
+<div class="container">
+
+  <header>
+    <span class="sun-icon">☀️</span>
+    <h1>لوحة تحكم الطاقة الشمسية</h1>
+    <p class="subtitle">SolaX Cloud · <span id="inverterSN">—</span></p>
+  </header>
+
+  <div class="status-bar">
+    <div class="status-badge">
+      <div class="dot" id="statusDot"></div>
+      <span id="statusText">جاري الاتصال...</span>
+    </div>
+    <div class="status-badge" style="color:var(--muted)">
+      🕐 آخر تحديث: <span id="uploadTime" style="margin-right:4px">—</span>
+    </div>
+  </div>
+
+  <div id="error-msg"></div>
+
+  <!-- Hero metrics -->
+  <div class="hero-grid">
+    <div class="metric-card" style="--accent: var(--sun)">
+      <span class="icon">⚡</span>
+      <div class="label">القدرة الفعلية (AC)</div>
+      <div class="value" id="acpower">—</div>
+      <div class="unit">واط (W)</div>
+      <div class="sub-value">أمبير: <span id="acAmps">—</span> A</div>
+    </div>
+    <div class="metric-card" style="--accent: var(--green)">
+      <span class="icon">📊</span>
+      <div class="label">إجمالي الإنتاج اليوم</div>
+      <div class="value" id="yieldtoday">—</div>
+      <div class="unit">كيلو واط ساعة (kWh)</div>
+    </div>
+    <div class="metric-card" style="--accent: var(--blue)">
+      <span class="icon">🔋</span>
+      <div class="label">الاستهلاك الكلي</div>
+      <div class="value" id="consumeenergy">—</div>
+      <div class="unit">كيلو واط ساعة (kWh)</div>
+    </div>
+    <div class="metric-card" style="--accent: #c084fc">
+      <span class="icon">🔌</span>
+      <div class="label">الطاقة المُغذَّاة للشبكة</div>
+      <div class="value" id="feedinpower">—</div>
+      <div class="unit">واط (W)</div>
+      <div class="sub-value">الإجمالي المُغذَّى: <span id="feedinenergy">—</span> kWh</div>
+    </div>
+  </div>
+
+  <!-- PV Strings -->
+  <div class="section-title">🌞 سلاسل الألواح الشمسية (DC)</div>
+  <div class="pv-grid" id="pvGrid">
+    <!-- filled by JS -->
+  </div>
+
+  <!-- Battery -->
+  <div class="section-title">🔋 البطارية</div>
+  <div class="battery-section">
+    <div class="battery-card">
+      <div class="battery-visual">
+        <div class="battery-body">
+          <div class="battery-fill" id="battFill" style="width:0%"></div>
+        </div>
+        <div class="battery-pct" id="soc">—%</div>
+      </div>
+      <div class="battery-detail">
+        حالة الشحن: <span id="batStatus">—</span><br>
+        قدرة البطارية: <span id="batPower">—</span> W<br>
+        تيار البطارية: <span id="batAmps">—</span> A
+        <span class="volt-hint">* محسوب بافتراض 48V</span>
+      </div>
+    </div>
+    <div class="battery-card">
+      <div class="battery-detail" style="line-height:2.2">
+        📦 إجمالي الإنتاج الكلي: <span id="yieldtotal">—</span> kWh<br>
+        🏭 نوع العاكس: <span id="inverterType">—</span><br>
+        📡 حالة العاكس: <span id="inverterStatus">—</span><br>
+        🔗 SN الواي فاي: <span id="wifiSn">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- EPS -->
+  <div class="section-title">🏠 قدرة EPS (احتياطية)</div>
+  <div class="eps-grid" id="epsGrid">
+    <!-- filled by JS -->
+  </div>
+
+  <button class="refresh-btn" id="refreshBtn" onclick="fetchData()">🔄 تحديث البيانات</button>
+
+  <footer>
+    SolaX Inverter Dashboard · inverter <span id="footerSN">—</span>
+  </footer>
+
+</div>
+
+<script>
+  // ═══════════════════════════════════════════════
+  //  CONFIG — edit these two values if needed
+  // ═══════════════════════════════════════════════
+  const TOKEN_ID = "202603160831272691378815";
+  const WIFI_SN  = "SNWVR2LQ3E";
+
+  // Assumed voltages for amp calculation
+  const AC_VOLTAGE   = 220;   // V — change to 230 for EU
+  const BAT_VOLTAGE  = 48;    // V — typical LiFePO4 pack
+  const PV_VOLTAGE   = [380, 380, 380, 380]; // DC string voltages (MPPT estimates)
+
+  // ═══════════════════════════════════════════════
+
+  function fmt(v, decimals = 1) {
+    if (v === null || v === undefined) return "—";
+    return Number(v).toFixed(decimals);
+  }
+
+  function amps(watts, voltage) {
+    if (!watts || !voltage) return "—";
+    return (watts / voltage).toFixed(2);
+  }
+
+  function batStatusLabel(code) {
+    const map = { "0": "وضع الاستعداد", "1": "شحن", "2": "تفريغ", "3": "محمي" };
+    return map[String(code)] ?? `كود: ${code}`;
+  }
+
+  function inverterStatusLabel(code) {
+    const map = {
+      "100": "عادي", "101": "شبكة كهرباء", "102": "EPS",
+      "103": "خطأ", "104": "تحقق", "107": "انتظار"
+    };
+    return map[String(code)] ?? `كود: ${code}`;
+  }
+
+  function inverterTypeLabel(code) {
+    const map = { "103": "X1-Hybrid", "101": "X1-Boost", "102": "X3-Hybrid" };
+    return map[String(code)] ?? `نوع ${code}`;
+  }
+
+  async function fetchData() {
+    const btn = document.getElementById('refreshBtn');
+    const loader = document.getElementById('loader');
+    const errorDiv = document.getElementById('error-msg');
+    btn.disabled = true;
+    loader.classList.add('show');
+    errorDiv.style.display = 'none';
+
+    try {
+      const res = await fetch("https://global.solaxcloud.com/api/v2/dataAccess/realtimeInfo/get", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "tokenId": TOKEN_ID
+        },
+        body: JSON.stringify({ wifiSn: WIFI_SN })
+      });
+
+      const json = await res.json();
+
+      if (!json.success) throw new Error(json.exception || "فشل الاتصال بالسيرفر");
+
+      populate(json.result);
+    } catch (e) {
+      errorDiv.textContent = "⚠️ خطأ: " + e.message;
+      errorDiv.style.display = 'block';
+      console.error(e);
+    } finally {
+      btn.disabled = false;
+      loader.classList.remove('show');
+    }
+  }
+
+  function populate(d) {
+    // Header
+    document.getElementById('inverterSN').textContent  = d.inverterSN ?? "—";
+    document.getElementById('footerSN').textContent    = d.inverterSN ?? "—";
+    document.getElementById('uploadTime').textContent  = d.uploadTime ?? "—";
+    document.getElementById('wifiSn').textContent      = d.sn ?? "—";
+
+    // Status
+    const isOnline = d.inverterStatus !== "107";
+    document.getElementById('statusDot').className  = 'dot' + (isOnline ? '' : ' offline');
+    document.getElementById('statusText').textContent = isOnline ? "متصل · يعمل" : "وضع الانتظار";
+
+    // Hero
+    document.getElementById('acpower').textContent       = fmt(d.acpower, 0);
+    document.getElementById('acAmps').textContent        = amps(d.acpower, AC_VOLTAGE);
+    document.getElementById('yieldtoday').textContent    = fmt(d.yieldtoday, 1);
+    document.getElementById('consumeenergy').textContent = fmt(d.consumeenergy, 1);
+    document.getElementById('feedinpower').textContent   = fmt(d.feedinpower, 0);
+    document.getElementById('feedinenergy').textContent  = fmt(d.feedinenergy, 1);
+
+    // PV Strings
+    const pvGrid = document.getElementById('pvGrid');
+    const pvKeys = ['powerdc1','powerdc2','powerdc3','powerdc4'];
+    pvGrid.innerHTML = '';
+    pvKeys.forEach((key, i) => {
+      if (d[key] === null || d[key] === undefined) return;
+      const w = d[key];
+      const a = amps(w, PV_VOLTAGE[i]);
+      pvGrid.innerHTML += `
+        <div class="pv-card">
+          <div class="pv-label">🔆 سلسلة PV${i+1}</div>
+          <div class="pv-value">${fmt(w,0)}<span class="pv-unit"> W</span></div>
+          <div class="pv-amp">⚡ ${a} A &nbsp;·&nbsp; ~${PV_VOLTAGE[i]}V</div>
+        </div>`;
+    });
+
+    // Total PV
+    const totalPV = pvKeys.reduce((s, k) => s + (d[k] ?? 0), 0);
+    pvGrid.innerHTML += `
+      <div class="pv-card" style="border-color:rgba(255,183,3,0.3)">
+        <div class="pv-label">⚡ إجمالي DC</div>
+        <div class="pv-value">${fmt(totalPV,0)}<span class="pv-unit"> W</span></div>
+        <div class="pv-amp">🔋 ${amps(totalPV, AC_VOLTAGE)} A (تقريبي)</div>
+      </div>`;
+
+    // Battery
+    const soc = d.soc ?? 0;
+    document.getElementById('soc').textContent      = fmt(soc, 0) + "%";
+    document.getElementById('batPower').textContent = fmt(d.batPower, 0);
+    document.getElementById('batAmps').textContent  = amps(Math.abs(d.batPower), BAT_VOLTAGE);
+    document.getElementById('batStatus').textContent = batStatusLabel(d.batStatus);
+    document.getElementById('battFill').style.width = soc + "%";
+
+    document.getElementById('yieldtotal').textContent    = fmt(d.yieldtotal, 1);
+    document.getElementById('inverterType').textContent  = inverterTypeLabel(d.inverterType);
+    document.getElementById('inverterStatus').textContent = inverterStatusLabel(d.inverterStatus);
+
+    // EPS
+    const epsGrid = document.getElementById('epsGrid');
+    const epsKeys = ['peps1','peps2','peps3'];
+    epsGrid.innerHTML = '';
+    epsKeys.forEach((key, i) => {
+      const w = d[key];
+      if (w === null || w === undefined) return;
+      epsGrid.innerHTML += `
+        <div class="eps-card">
+          <div class="eps-label">🏠 EPS${i+1}</div>
+          <div class="eps-value">${fmt(w,0)} <small style="font-size:0.6em;color:var(--muted)">W</small></div>
+          <div class="eps-amp">${amps(w, AC_VOLTAGE)} A</div>
+        </div>`;
+    });
+    if (!epsGrid.innerHTML) epsGrid.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;grid-column:1/-1">لا توجد بيانات EPS</p>';
+  }
+
+  // Auto-load on start
+  fetchData();
+
+  // Auto-refresh every 5 minutes
+  setInterval(fetchData, 5 * 60 * 1000);
+</script>
+</body>
+</html>
