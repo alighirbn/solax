@@ -6,184 +6,671 @@
 <title>SolaX Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --sun:#FFB800;--sun2:#FF8C00;--grid:#00D4FF;--bat:#00FF88;
-    --eps:#FF7744;--bg:#050D1A;--s1:#0A1628;--s2:#0F1F3D;
-    --border:rgba(0,212,255,0.12);--text:#E8F4FF;--dim:#4A6A8A;
+  :root{
+    --sun:#FFB800;--sun2:#FF6B00;--grid:#00D4FF;--bat:#00FF88;
+    --eps:#FF7744;--load:#BB88FF;--bg:#050D1A;--s1:#0A1628;--s2:#0F1F3D;
+    --border:rgba(0,212,255,0.1);--text:#E8F4FF;--dim:#4A6A8A;--red:#FF4455;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   body{
     background:var(--bg);color:var(--text);
     font-family:'Cairo',Tahoma,sans-serif;min-height:100vh;
     background-image:
-      radial-gradient(ellipse at 20% 10%,rgba(255,184,0,.04) 0%,transparent 50%),
-      radial-gradient(ellipse at 80% 80%,rgba(0,212,255,.04) 0%,transparent 50%),
-      linear-gradient(rgba(0,212,255,.025) 1px,transparent 1px),
-      linear-gradient(90deg,rgba(0,212,255,.025) 1px,transparent 1px);
-    background-size:100% 100%,100% 100%,36px 36px,36px 36px;
+      radial-gradient(ellipse at 15% 10%,rgba(255,184,0,.05) 0%,transparent 50%),
+      radial-gradient(ellipse at 85% 85%,rgba(0,212,255,.05) 0%,transparent 50%),
+      linear-gradient(rgba(0,212,255,.02) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(0,212,255,.02) 1px,transparent 1px);
+    background-size:100% 100%,100% 100%,40px 40px,40px 40px;
   }
-  .wrap{max-width:860px;margin:0 auto;padding:18px;}
-  header{display:flex;justify-content:space-between;align-items:center;padding-bottom:16px;margin-bottom:20px;border-bottom:1px solid var(--border);}
-  .logo{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--sun);letter-spacing:3px;text-shadow:0 0 20px rgba(255,184,0,.4);}
+  .wrap{max-width:960px;margin:0 auto;padding:16px;}
+
+  /* HEADER */
+  header{display:flex;justify-content:space-between;align-items:center;padding-bottom:14px;margin-bottom:18px;border-bottom:1px solid var(--border);}
+  .logo{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:var(--sun);letter-spacing:3px;text-shadow:0 0 20px rgba(255,184,0,.5);}
   .logo span{color:var(--grid);}
-  .hbadge{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--dim);background:var(--s1);padding:6px 14px;border-radius:20px;border:1px solid var(--border);}
+  .logo small{font-size:10px;color:var(--dim);display:block;letter-spacing:1px;font-family:'Cairo',sans-serif;font-weight:400;margin-top:2px;}
+  .hright{display:flex;align-items:center;gap:10px;}
+  .hbadge{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--dim);background:var(--s1);padding:5px 12px;border-radius:20px;border:1px solid var(--border);}
   .dot{width:8px;height:8px;border-radius:50%;background:#333;transition:.3s;}
   .dot.ok{background:var(--bat);box-shadow:0 0 6px var(--bat);animation:blink 2s infinite;}
-  .dot.err{background:#FF4444;}
-  @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
-  .hero{text-align:center;padding:10px 0 18px;}
-  .sun-wrap{width:130px;height:130px;margin:0 auto 12px;position:relative;display:flex;align-items:center;justify-content:center;}
-  .sun-wrap::before{content:'';position:absolute;inset:-5px;border-radius:50%;background:conic-gradient(var(--sun) 0%,var(--sun2) 50%,var(--sun) 100%);animation:spin 5s linear infinite;opacity:.55;}
-  .sun-wrap::after{content:'';position:absolute;inset:-16px;border-radius:50%;background:radial-gradient(circle,rgba(255,184,0,.12),transparent 70%);animation:breathe 3s ease-in-out infinite;}
+  .dot.err{background:var(--red);}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+  /* TABS */
+  .tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+  .tab{padding:7px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--s1);color:var(--dim);transition:.2s;}
+  .tab.active{background:var(--s2);color:var(--text);border-color:rgba(0,212,255,.3);}
+  .tab:hover{border-color:rgba(0,212,255,.25);color:var(--text);}
+  .panel{display:none;}.panel.active{display:block;}
+
+  /* HERO */
+  .hero{text-align:center;padding:8px 0 16px;}
+  .sun-wrap{width:120px;height:120px;margin:0 auto 10px;position:relative;display:flex;align-items:center;justify-content:center;}
+  .sun-wrap::before{content:'';position:absolute;inset:-5px;border-radius:50%;background:conic-gradient(var(--sun),var(--sun2),var(--sun));animation:spin 5s linear infinite;opacity:.5;}
+  .sun-wrap::after{content:'';position:absolute;inset:-14px;border-radius:50%;background:radial-gradient(circle,rgba(255,184,0,.1),transparent 70%);animation:breathe 3s ease-in-out infinite;}
   @keyframes spin{to{transform:rotate(360deg);}}
-  @keyframes breathe{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.12);opacity:1}}
+  @keyframes breathe{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.1);opacity:1}}
   .sun-inner{width:100%;height:100%;border-radius:50%;background:var(--s1);border:2px solid var(--s2);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;z-index:1;}
-  .pv-val{font-family:'Orbitron',monospace;font-size:26px;font-weight:700;color:var(--sun);text-shadow:0 0 14px rgba(255,184,0,.6);line-height:1;}
-  .pv-unit{font-size:11px;color:var(--dim);margin-top:3px;letter-spacing:1px;}
-  .status-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:13px;font-weight:600;margin-top:6px;}
-  .s-normal{background:rgba(0,255,136,.12);color:var(--bat);border:1px solid rgba(0,255,136,.3);}
-  .s-wait{background:rgba(255,184,0,.12);color:var(--sun);border:1px solid rgba(255,184,0,.3);}
-  .s-fault{background:rgba(255,68,68,.12);color:#FF6666;border:1px solid rgba(255,68,68,.3);}
-  .s-offgrid{background:rgba(0,212,255,.12);color:var(--grid);border:1px solid rgba(0,212,255,.3);}
-  .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px;}
-  .card{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:18px 16px;position:relative;overflow:hidden;transition:border-color .3s,transform .2s;}
-  .card:hover{border-color:rgba(0,212,255,.28);transform:translateY(-2px);}
-  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:14px 14px 0 0;}
+  .pv-val{font-family:'Orbitron',monospace;font-size:24px;font-weight:700;color:var(--sun);text-shadow:0 0 12px rgba(255,184,0,.6);line-height:1;}
+  .pv-unit{font-size:10px;color:var(--dim);margin-top:3px;letter-spacing:1px;}
+  .pill{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;margin-top:5px;}
+  .s-normal{background:rgba(0,255,136,.1);color:var(--bat);border:1px solid rgba(0,255,136,.3);}
+  .s-wait{background:rgba(255,184,0,.1);color:var(--sun);border:1px solid rgba(255,184,0,.3);}
+  .s-fault{background:rgba(255,68,68,.1);color:var(--red);border:1px solid rgba(255,68,68,.3);}
+  .s-offgrid{background:rgba(0,212,255,.1);color:var(--grid);border:1px solid rgba(0,212,255,.3);}
+
+  /* GRID */
+  .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;}
+  .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;}
+  .g2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:12px;}
+  .g1{margin-bottom:12px;}
+
+  /* CARD */
+  .card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:14px;position:relative;overflow:hidden;transition:border-color .25s,transform .2s;}
+  .card:hover{border-color:rgba(0,212,255,.25);transform:translateY(-1px);}
+  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:12px 12px 0 0;}
   .c-sun::before{background:linear-gradient(90deg,var(--sun),var(--sun2));}
   .c-bat::before{background:linear-gradient(90deg,var(--bat),#00AA55);}
-  .c-grid::before{background:linear-gradient(90deg,var(--grid),#0088AA);}
-  .c-eps::before{background:linear-gradient(90deg,var(--eps),#CC4400);}
-  .cicon{font-size:24px;margin-bottom:8px;display:block;}
-  .clabel{font-size:11px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;}
-  .cval{font-family:'Orbitron',monospace;font-size:22px;font-weight:700;line-height:1;}
-  .cunit{font-family:'Cairo',sans-serif;font-size:12px;color:var(--dim);margin-right:3px;}
-  .csub{font-size:12px;color:var(--dim);margin-top:7px;}
-  .v-sun{color:var(--sun);text-shadow:0 0 10px rgba(255,184,0,.4);}
-  .v-bat{color:var(--bat);text-shadow:0 0 10px rgba(0,255,136,.4);}
-  .v-grid{color:var(--grid);text-shadow:0 0 10px rgba(0,212,255,.4);}
+  .c-grid::before{background:linear-gradient(90deg,var(--grid),#0066AA);}
+  .c-eps::before{background:linear-gradient(90deg,var(--eps),#CC3300);}
+  .c-load::before{background:linear-gradient(90deg,var(--load),#8833CC);}
+  .c-info::before{background:linear-gradient(90deg,#667788,#334455);}
+  .c-calc::before{background:linear-gradient(90deg,#88FFCC,#00AAAA);}
+
+  .cicon{font-size:22px;margin-bottom:6px;display:block;}
+  .clabel{font-size:10px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+  .cval{font-family:'Orbitron',monospace;font-size:20px;font-weight:700;line-height:1;}
+  .cval.lg{font-size:24px;}
+  .cval.sm{font-size:16px;}
+  .cunit{font-family:'Cairo',sans-serif;font-size:11px;color:var(--dim);margin-right:2px;}
+  .csub{font-size:11px;color:var(--dim);margin-top:5px;}
+  .csub.good{color:var(--bat);}
+  .csub.warn{color:var(--sun);}
+  .csub.bad{color:var(--red);}
+
+  .v-sun{color:var(--sun);text-shadow:0 0 8px rgba(255,184,0,.4);}
+  .v-bat{color:var(--bat);text-shadow:0 0 8px rgba(0,255,136,.4);}
+  .v-grid{color:var(--grid);text-shadow:0 0 8px rgba(0,212,255,.4);}
   .v-eps{color:var(--eps);}
-  .v-gray{color:#8899AA;}
-  .bat-bar{height:7px;background:var(--s2);border-radius:4px;margin-top:9px;overflow:hidden;}
-  .bat-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--bat),#00AA55);transition:width 1s ease;box-shadow:0 0 8px rgba(0,255,136,.35);}
-  .summary{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px;}
-  .sum-title{font-size:13px;color:var(--dim);letter-spacing:1px;margin-bottom:14px;}
-  .sum-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border);}
-  .sum-row:last-child{border-bottom:none;}
-  .sum-name{font-size:13px;color:var(--dim);}
-  .sum-val{font-family:'Orbitron',monospace;font-size:15px;font-weight:700;}
-  .footer{display:flex;justify-content:space-between;align-items:center;background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:12px 18px;}
-  .f-info{font-size:11px;color:var(--dim);line-height:1.7;}
-  .f-info span{color:var(--text);}
-  .rbtn{background:linear-gradient(135deg,var(--sun),var(--sun2));color:#000;border:none;padding:8px 20px;border-radius:8px;font-family:'Cairo',sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:opacity .2s,transform .1s;}
+  .v-load{color:var(--load);}
+  .v-calc{color:#88FFCC;}
+  .v-gray{color:#778899;}
+  .v-red{color:var(--red);}
+
+  /* BAR */
+  .bar{height:6px;background:var(--s2);border-radius:3px;margin-top:8px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:3px;transition:width 1s ease;}
+  .bar-sun{background:linear-gradient(90deg,var(--sun),var(--sun2));box-shadow:0 0 6px rgba(255,184,0,.3);}
+  .bar-bat{background:linear-gradient(90deg,var(--bat),#00AA55);box-shadow:0 0 6px rgba(0,255,136,.3);}
+
+  /* SECTION TITLE */
+  .sec{font-size:11px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin:16px 0 10px;padding-right:10px;border-right:2px solid var(--grid);}
+
+  /* TABLE */
+  .tbl{background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:12px;}
+  .tbl-title{padding:12px 16px;font-size:12px;color:var(--dim);letter-spacing:1px;border-bottom:1px solid var(--border);}
+  .trow{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border);transition:background .15s;}
+  .trow:last-child{border-bottom:none;}
+  .trow:hover{background:rgba(0,212,255,.03);}
+  .tname{font-size:13px;color:var(--dim);}
+  .tval{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;}
+  .tval small{font-family:'Cairo',sans-serif;font-size:10px;color:var(--dim);margin-right:2px;}
+
+  /* FLOW DIAGRAM */
+  .flow{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:12px;}
+  .flow-title{font-size:12px;color:var(--dim);letter-spacing:1px;margin-bottom:16px;}
+  .flow-grid{display:grid;grid-template-columns:1fr auto 1fr;grid-template-rows:1fr auto 1fr;gap:10px;align-items:center;justify-items:center;}
+  .fnode{background:var(--s2);border-radius:10px;padding:10px 14px;text-align:center;border:1px solid var(--border);min-width:90px;}
+  .fnode-icon{font-size:20px;display:block;margin-bottom:3px;}
+  .fnode-label{font-size:10px;color:var(--dim);}
+  .fnode-val{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;margin-top:2px;}
+  .farrow{font-size:18px;color:var(--dim);display:flex;align-items:center;justify-content:center;}
+  .farrow.active-sun{color:var(--sun);text-shadow:0 0 8px rgba(255,184,0,.5);}
+  .farrow.active-bat{color:var(--bat);text-shadow:0 0 8px rgba(0,255,136,.5);}
+  .farrow.active-grid{color:var(--grid);text-shadow:0 0 8px rgba(0,212,255,.5);}
+  .farrow.active-eps{color:var(--eps);}
+  .center-node{background:var(--s2);border-radius:50%;width:64px;height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid rgba(0,212,255,.2);font-size:9px;color:var(--dim);}
+  .center-node b{font-family:'Orbitron',monospace;font-size:12px;color:var(--grid);}
+
+  /* FOOTER */
+  .footer{display:flex;justify-content:space-between;align-items:center;background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:10px 16px;margin-top:8px;}
+  .f-info{font-size:10px;color:var(--dim);line-height:1.8;}
+  .f-info b{color:var(--text);}
+  .rbtn{background:linear-gradient(135deg,var(--sun),var(--sun2));color:#000;border:none;padding:7px 18px;border-radius:7px;font-family:'Cairo',sans-serif;font-weight:700;font-size:12px;cursor:pointer;transition:opacity .2s,transform .1s;}
   .rbtn:hover{opacity:.85;}
   .rbtn:active{transform:scale(.97);}
-  .rbtn:disabled{opacity:.35;cursor:not-allowed;}
-  .loading{text-align:center;padding:60px 20px;color:var(--dim);}
-  .spinner{width:38px;height:38px;margin:0 auto 14px;border:3px solid var(--border);border-top-color:var(--sun);border-radius:50%;animation:spin .8s linear infinite;}
-  .errbox{background:rgba(255,68,68,.08);border:1px solid rgba(255,68,68,.25);border-radius:12px;padding:22px;text-align:center;color:#FF8888;font-size:14px;line-height:1.8;margin-bottom:14px;}
-  @media(max-width:580px){.g3{grid-template-columns:repeat(2,1fr);}.cval{font-size:18px;}.pv-val{font-size:20px;}}
+  .rbtn:disabled{opacity:.3;cursor:not-allowed;}
+
+  /* LOADING/ERROR */
+  .loading{text-align:center;padding:50px 20px;color:var(--dim);}
+  .spinner{width:36px;height:36px;margin:0 auto 12px;border:3px solid var(--border);border-top-color:var(--sun);border-radius:50%;animation:spin .8s linear infinite;}
+  .errbox{background:rgba(255,68,68,.07);border:1px solid rgba(255,68,68,.2);border-radius:10px;padding:20px;text-align:center;color:#FF8888;font-size:13px;line-height:1.9;margin-bottom:12px;}
+
+  /* TEMP INDICATOR */
+  .temp-bar{display:flex;align-items:center;gap:6px;margin-top:6px;}
+  .temp-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .temp-track{flex:1;height:4px;background:var(--s2);border-radius:2px;overflow:hidden;}
+  .temp-fill{height:100%;border-radius:2px;transition:width 1s ease;}
+
+  @media(max-width:640px){
+    .g4{grid-template-columns:repeat(2,1fr);}
+    .g3{grid-template-columns:repeat(2,1fr);}
+    .cval{font-size:17px;}.cval.lg{font-size:20px;}
+    .pv-val{font-size:20px;}
+    .flow-grid{grid-template-columns:1fr auto 1fr;}
+    .fnode{min-width:70px;padding:8px 10px;}
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="logo">SOLAR<span>X</span></div>
-    <div class="hbadge"><div class="dot" id="dot"></div><span id="stxt">جاري الاتصال...</span></div>
+    <div class="logo">SOLAR<span>X</span><small>X1-Lite-12K-LV • SN: 10JP00011F900A</small></div>
+    <div class="hright">
+      <div class="hbadge"><div class="dot" id="dot"></div><span id="stxt">جاري...</span></div>
+    </div>
   </header>
-  <div id="main"><div class="loading"><div class="spinner"></div><div>جاري تحميل بيانات الجهاز...</div></div></div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('overview')">⚡ نظرة عامة</div>
+    <div class="tab" onclick="switchTab('battery')">🔋 البطارية</div>
+    <div class="tab" onclick="switchTab('pv')">☀️ الألواح</div>
+    <div class="tab" onclick="switchTab('grid')">🔌 الشبكة</div>
+    <div class="tab" onclick="switchTab('eps')">🏠 EPS</div>
+    <div class="tab" onclick="switchTab('stats')">📊 الإحصائيات</div>
+  </div>
+
+  <div id="main">
+    <div class="loading"><div class="spinner"></div><div>جاري تحميل بيانات الجهاز...</div></div>
+  </div>
+
   <div class="footer">
-    <div class="f-info">آخر تحديث: <span id="lastUp">—</span><br>SN: SNWVR2LQ3E</div>
+    <div class="f-info">
+      آخر تحديث: <b id="lastUp">—</b> &nbsp;|&nbsp; وقت الرفع: <b id="uploadT">—</b>
+    </div>
     <button class="rbtn" id="rbtn" onclick="load()">🔄 تحديث</button>
   </div>
 </div>
+
 <script>
 const TOKEN   = "202603160831272691378815";
 const WIFI_SN = "SNWVR2LQ3E";
-
-// corsproxy.io يمرر الطلب مع headers كاملة
 const TARGET  = "https://global.solaxcloud.com/api/v2/dataAccess/realtimeInfo/get";
 const PROXY   = "https://corsproxy.io/?" + encodeURIComponent(TARGET);
 
 const STATUS={
-  100:{l:"انتظار",c:"s-wait"},101:{l:"فحص ذاتي",c:"s-wait"},
+  100:{l:"انتظار التشغيل",c:"s-wait"},101:{l:"فحص ذاتي",c:"s-wait"},
   102:{l:"عمل طبيعي ✓",c:"s-normal"},103:{l:"خطأ مؤقت",c:"s-fault"},
-  104:{l:"خطأ دائم",c:"s-fault"},105:{l:"تحديث",c:"s-wait"},
-  107:{l:"Off-grid ⚡",c:"s-offgrid"},109:{l:"نوم",c:"s-wait"},
-  110:{l:"استعداد",c:"s-wait"},150:{l:"استخدام ذاتي",c:"s-normal"},
-  151:{l:"وقت إجباري",c:"s-normal"},152:{l:"احتياط",c:"s-normal"},
-  153:{l:"أولوية تغذية",c:"s-normal"},
+  104:{l:"خطأ دائم",c:"s-fault"},105:{l:"تحديث البرنامج",c:"s-wait"},
+  107:{l:"Off-grid ⚡",c:"s-offgrid"},109:{l:"وضع النوم",c:"s-wait"},
+  110:{l:"استعداد",c:"s-wait"},130:{l:"VPP",c:"s-normal"},
+  150:{l:"استخدام ذاتي",c:"s-normal"},151:{l:"وقت إجباري",c:"s-normal"},
+  152:{l:"وضع الاحتياط",c:"s-normal"},153:{l:"أولوية التغذية",c:"s-normal"},
+  131:{l:"TOU - ذاتي",c:"s-normal"},132:{l:"TOU - شحن",c:"s-normal"},
+  133:{l:"TOU - تفريغ",c:"s-normal"},
 };
-const f=(v,d=1)=>(v==null||isNaN(+v))?"—":(+v).toFixed(d);
 
-function render(r){
-  const pv=(r.powerdc1||0)+(r.powerdc2||0);
+const INV_TYPE={
+  "1":"X1-LX","2":"X-Hybrid","3":"X1-Hybiyd/fit","4":"X1-Boost/Air/Mini",
+  "5":"X3-Hybiyd/fit","6":"X3-20K","7":"X3-MIC/PRO","8":"X1-Smart",
+  "9":"X1-AC","10":"A1-Hybrid","11":"A1-Fit","12":"A1-Grid",
+  "13":"J1-ESS","14":"X3-Hybiyd/fit Pro","15":"X3-MIC/PRO G2",
+  "16":"X1-SPT","17":"X1-Boost3.0","19":"X3-MIC/PRO G3",
+  "20":"X1-SL","21":"X3-FIT","22":"X3-Ultra",
+  "24":"X1-Fit","25":"X3-Mega G2","26":"X1-Boost Air Mini G4",
+  "39":"X1-Hybrid G4","40":"X3-Hybrid G4",
+  "103":"X1-Lite-12K-LV",
+};
+
+const f=(v,d=1)=>(v==null||v===undefined||isNaN(+v))?"—":(+v).toFixed(d);
+const fkw=(v)=>{
+  if(v==null||isNaN(+v))return"—";
+  const n=+v;
+  return n>=1000?f(n/1000,2)+" kW":f(n,0)+" W";
+};
+
+let currentTab="overview";
+let lastData=null;
+
+function switchTab(tab){
+  currentTab=tab;
+  document.querySelectorAll(".tab").forEach((t,i)=>{
+    const tabs=["overview","battery","pv","grid","eps","stats"];
+    t.classList.toggle("active",tabs[i]===tab);
+  });
+  if(lastData) renderAll(lastData);
+}
+
+function tempColor(t){
+  if(t==null)return"#667788";
+  if(t<40)return"#00FF88";
+  if(t<55)return"#FFB800";
+  return"#FF4455";
+}
+function tempWidth(t){
+  if(t==null)return 0;
+  return Math.min(100,Math.max(0,(+t/80)*100));
+}
+function batStatusTxt(s){
+  return s=="0"?{t:"طبيعي ✓",c:"good"}:s=="1"?{t:"خطأ ✗",c:"bad"}:s=="2"?{t:"غير متصل",c:"warn"}:{t:"—",c:""};
+}
+
+function buildOverview(r){
+  const pv=(r.powerdc1||0)+(r.powerdc2||0)+(r.powerdc3||0)+(r.powerdc4||0);
   const st=STATUS[+r.inverterStatus]||{l:`حالة ${r.inverterStatus}`,c:"s-wait"};
-  const fp=r.feedinpower, bp=r.batPower, soc=r.soc;
-  const gridTxt=fp>0?"تصدير ⬆":fp<0?"استيراد ⬇":"—";
-  const batTxt=bp==null?"—":bp>0?"شحن ⬆":bp<0?"تفريغ ⬇":"ثابت";
-  const peps=r.peps1??r.peps2??r.peps3;
-  return `
+  const fp=r.feedinpower||0, bp=r.batPower||0;
+  const consumption=Math.abs(fp<0?fp:0)+(r.acpower||0); // estimate
+  const selfUse=pv>0?Math.min(100,((pv-Math.max(0,fp))/pv*100)):0;
+  const bs=batStatusTxt(r.batStatus);
+
+  return`
   <div class="hero">
     <div class="sun-wrap"><div class="sun-inner">
       <div class="pv-val">${f(pv,0)}</div>
-      <div class="pv-unit">واط • PV</div>
+      <div class="pv-unit">WATT • PV</div>
     </div></div>
-    <div style="font-size:13px;color:var(--dim)">طاقة الألواح الشمسية الكلية</div>
-    <div class="status-pill ${st.c}">${st.l}</div>
+    <div style="font-size:12px;color:var(--dim);margin-bottom:4px">إجمالي طاقة الألواح الشمسية</div>
+    <div class="pill ${st.c}">${st.l}</div>
   </div>
+
+  <div class="g4">
+    <div class="card c-sun">
+      <span class="cicon">⚡</span>
+      <div class="clabel">طاقة AC</div>
+      <div class="cval v-sun">${f(r.acpower,0)}<span class="cunit">W</span></div>
+      <div class="csub">الإخراج الفعلي</div>
+    </div>
+    <div class="card c-bat">
+      <span class="cicon">🔋</span>
+      <div class="clabel">البطارية SOC</div>
+      <div class="cval v-bat">${r.soc!=null?f(r.soc,0):"—"}<span class="cunit">%</span></div>
+      <div class="bar"><div class="bar-fill bar-bat" style="width:${r.soc??0}%"></div></div>
+      <div class="csub ${bs.c}">${bs.t}</div>
+    </div>
+    <div class="card c-grid">
+      <span class="cicon">🔌</span>
+      <div class="clabel">الشبكة</div>
+      <div class="cval v-grid">${f(Math.abs(fp),0)}<span class="cunit">W</span></div>
+      <div class="csub">${fp>0?"تصدير ⬆":fp<0?"استيراد ⬇":"—"}</div>
+    </div>
+    <div class="card c-eps">
+      <span class="cicon">🏠</span>
+      <div class="clabel">EPS حمل</div>
+      <div class="cval v-eps">${f(r.peps1??r.peps2??r.peps3,0)}<span class="cunit">W</span></div>
+      <div class="csub">الطاقة الداخلية</div>
+    </div>
+  </div>
+
+  <!-- FLOW -->
+  <div class="flow">
+    <div class="flow-title">🔄 تدفق الطاقة</div>
+    <div class="flow-grid">
+      <div class="fnode" style="border-color:rgba(255,184,0,.3)">
+        <span class="fnode-icon">☀️</span>
+        <div class="fnode-label">الألواح</div>
+        <div class="fnode-val v-sun">${f(pv,0)}W</div>
+      </div>
+      <div class="farrow ${pv>0?'active-sun':''}">→</div>
+      <div class="center-node"><span style="font-size:16px">⚙️</span><b>INV</b></div>
+      <div class="fnode" style="border-color:rgba(0,255,136,.3)">
+        <span class="fnode-icon">🔋</span>
+        <div class="fnode-label">البطارية</div>
+        <div class="fnode-val v-bat">${bp>0?"↑":bp<0?"↓":""}${f(Math.abs(bp),0)}W</div>
+      </div>
+      <div class="farrow ${bp!=0?'active-bat':''}">↔</div>
+      <div style="grid-column:3;grid-row:2;display:flex;flex-direction:column;gap:8px;align-items:center">
+        <div class="fnode" style="border-color:rgba(0,212,255,.3)">
+          <span class="fnode-icon">🔌</span>
+          <div class="fnode-label">الشبكة</div>
+          <div class="fnode-val v-grid">${fp>0?"↑":fp<0?"↓":""}${f(Math.abs(fp),0)}W</div>
+        </div>
+        <div class="fnode" style="border-color:rgba(255,119,68,.3)">
+          <span class="fnode-icon">🏠</span>
+          <div class="fnode-label">الحمل</div>
+          <div class="fnode-val v-eps">${f(r.peps1??0,0)}W</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="g3">
-    <div class="card c-sun"><span class="cicon">⚡</span><div class="clabel">طاقة AC</div><div class="cval v-sun">${f(r.acpower,0)}<span class="cunit">W</span></div><div class="csub">الإخراج الحالي</div></div>
-    <div class="card c-bat"><span class="cicon">🔋</span><div class="clabel">البطارية</div><div class="cval v-bat">${soc!=null?f(soc,0):"—"}<span class="cunit">%</span></div><div class="bat-bar"><div class="bat-fill" style="width:${soc??0}%"></div></div><div class="csub">${batTxt} ${bp!=null?"• "+f(Math.abs(bp),0)+" W":""}</div></div>
-    <div class="card c-grid"><span class="cicon">🔌</span><div class="clabel">الشبكة</div><div class="cval v-grid">${f(Math.abs(fp),0)}<span class="cunit">W</span></div><div class="csub">${gridTxt}</div></div>
-  </div>
-  <div class="g3">
-    <div class="card c-sun"><span class="cicon">☀️</span><div class="clabel">PV1</div><div class="cval v-sun">${f(r.powerdc1,0)}<span class="cunit">W</span></div></div>
-    <div class="card c-sun"><span class="cicon">☀️</span><div class="clabel">PV2</div><div class="cval v-sun">${f(r.powerdc2,0)}<span class="cunit">W</span></div></div>
-    <div class="card c-eps"><span class="cicon">🏠</span><div class="clabel">EPS (حمل)</div><div class="cval v-eps">${peps!=null?f(peps,0):"—"}<span class="cunit">W</span></div><div class="csub">الطاقة الداخلية</div></div>
-  </div>
-  <div class="summary">
-    <div class="sum-title">📊 ملخص الطاقة</div>
-    <div class="sum-row"><span class="sum-name">☀️ إنتاج اليوم</span><span class="sum-val v-sun">${f(r.yieldtoday,2)} <span style="font-size:11px;color:var(--dim)">kWh</span></span></div>
-    <div class="sum-row"><span class="sum-name">📦 إجمالي الإنتاج</span><span class="sum-val v-sun">${f(r.yieldtotal,1)} <span style="font-size:11px;color:var(--dim)">kWh</span></span></div>
-    <div class="sum-row"><span class="sum-name">⬆️ تصدير للشبكة</span><span class="sum-val v-grid">${f(r.feedinenergy,1)} <span style="font-size:11px;color:var(--dim)">kWh</span></span></div>
-    <div class="sum-row"><span class="sum-name">⬇️ استيراد من الشبكة</span><span class="sum-val v-grid">${f(r.consumeenergy,1)} <span style="font-size:11px;color:var(--dim)">kWh</span></span></div>
-    <div class="sum-row"><span class="sum-name">🔋 حالة البطارية</span><span class="sum-val ${r.batStatus=="0"?"v-bat":r.batStatus=="1"?"":"v-gray"}">${r.batStatus=="0"?"طبيعي ✓":r.batStatus=="1"?"خطأ ✗":r.batStatus=="2"?"غير متصل":"—"}</span></div>
-    <div class="sum-row"><span class="sum-name">🕒 آخر رفع</span><span class="sum-val v-gray" style="font-size:12px">${r.uploadTime||"—"}</span></div>
+    <div class="card c-calc">
+      <span class="cicon">📈</span>
+      <div class="clabel">الاستهلاك الذاتي</div>
+      <div class="cval v-calc">${f(selfUse,1)}<span class="cunit">%</span></div>
+      <div class="bar"><div class="bar-fill" style="width:${selfUse}%;background:linear-gradient(90deg,#88FFCC,#00AAAA)"></div></div>
+      <div class="csub">نسبة استخدام الطاقة الشمسية</div>
+    </div>
+    <div class="card c-sun">
+      <span class="cicon">☀️</span>
+      <div class="clabel">PV1 + PV2</div>
+      <div class="cval v-sun sm">${f(r.powerdc1,0)} + ${f(r.powerdc2,0)}<span class="cunit">W</span></div>
+      <div class="csub">المجموع: ${f(pv,0)} W</div>
+    </div>
+    <div class="card c-info">
+      <span class="cicon">🕒</span>
+      <div class="clabel">آخر رفع للبيانات</div>
+      <div class="cval v-gray sm">${(r.uploadTime||"—").split(" ")[1]||"—"}</div>
+      <div class="csub">${(r.uploadTime||"").split(" ")[0]||""}</div>
+    </div>
   </div>`;
+}
+
+function buildBattery(r){
+  const bp=r.batPower||0;
+  const bs=batStatusTxt(r.batStatus);
+  const bv=r.batVoltage, bi=r.batCurrent, bt=r.batTemperature, bc=r.batcycle;
+  const tc=tempColor(bt), tw=tempWidth(bt);
+  return`
+  <div class="sec">🔋 تفاصيل البطارية</div>
+  <div class="g4">
+    <div class="card c-bat">
+      <span class="cicon">🔋</span>
+      <div class="clabel">نسبة الشحن SOC</div>
+      <div class="cval lg v-bat">${r.soc!=null?f(r.soc,0):"—"}<span class="cunit">%</span></div>
+      <div class="bar"><div class="bar-fill bar-bat" style="width:${r.soc??0}%"></div></div>
+    </div>
+    <div class="card c-bat">
+      <span class="cicon">⚡</span>
+      <div class="clabel">طاقة البطارية</div>
+      <div class="cval v-bat">${f(Math.abs(bp),0)}<span class="cunit">W</span></div>
+      <div class="csub">${bp>0?"شحن ⬆":bp<0?"تفريغ ⬇":"ثابت"}</div>
+    </div>
+    <div class="card c-bat">
+      <span class="cicon">🔌</span>
+      <div class="clabel">فولتية البطارية</div>
+      <div class="cval v-bat">${f(bv,1)}<span class="cunit">V</span></div>
+      <div class="csub">Battery Voltage</div>
+    </div>
+    <div class="card c-bat">
+      <span class="cicon">〰️</span>
+      <div class="clabel">تيار البطارية</div>
+      <div class="cval v-bat">${f(bi,1)}<span class="cunit">A</span></div>
+      <div class="csub">Battery Current</div>
+    </div>
+  </div>
+  <div class="g3">
+    <div class="card c-bat">
+      <span class="cicon">🌡️</span>
+      <div class="clabel">درجة حرارة البطارية</div>
+      <div class="cval" style="color:${tc}">${bt!=null?f(bt,1):"—"}<span class="cunit">°C</span></div>
+      <div class="temp-bar">
+        <div class="temp-dot" style="background:${tc}"></div>
+        <div class="temp-track"><div class="temp-fill" style="width:${tw}%;background:${tc}"></div></div>
+      </div>
+      <div class="csub">${bt==null?"—":bt<40?"طبيعية":bt<55?"مرتفعة قليلاً":"مرتفعة جداً!"}</div>
+    </div>
+    <div class="card c-bat">
+      <span class="cicon">🔄</span>
+      <div class="clabel">دورات الشحن</div>
+      <div class="cval v-bat">${bc!=null?bc:"—"}</div>
+      <div class="csub">Charge Cycles</div>
+    </div>
+    <div class="card c-bat">
+      <span class="cicon">✅</span>
+      <div class="clabel">حالة البطارية</div>
+      <div class="cval sm ${bs.c=='good'?'v-bat':bs.c=='bad'?'v-red':'v-gray'}">${bs.t}</div>
+      <div class="csub">batStatus: ${r.batStatus??'—'}</div>
+    </div>
+  </div>
+  <div class="tbl">
+    <div class="tbl-title">📋 جميع بيانات البطارية</div>
+    ${trow("SOC",r.soc,"%","v-bat")}
+    ${trow("الطاقة",bp,"W","v-bat")}
+    ${trow("الفولتية",bv,"V","v-bat")}
+    ${trow("التيار",bi,"A","v-bat")}
+    ${trow("درجة الحرارة",bt,"°C",bt>55?"v-red":bt>40?"v-sun":"v-bat")}
+    ${trow("دورات الشحن",bc,"","v-bat")}
+    ${trow("الحالة",r.batStatus=="0"?"0 (طبيعي)":r.batStatus=="1"?"1 (خطأ)":r.batStatus=="2"?"2 (غير متصل)":r.batStatus,"","v-gray")}
+  </div>`;
+}
+
+function buildPV(r){
+  const pv=(r.powerdc1||0)+(r.powerdc2||0)+(r.powerdc3||0)+(r.powerdc4||0);
+  const eff=pv>0&&r.acpower>0?Math.min(100,(r.acpower/pv*100)):0;
+  return`
+  <div class="sec">☀️ تفاصيل الألواح الشمسية</div>
+  <div class="g4">
+    ${[1,2,3,4].map(i=>`
+    <div class="card c-sun">
+      <span class="cicon">☀️</span>
+      <div class="clabel">PV${i}</div>
+      <div class="cval v-sun">${f(r[`powerdc${i}`],0)}<span class="cunit">W</span></div>
+      <div class="bar"><div class="bar-fill bar-sun" style="width:${Math.min(100,(r[`powerdc${i}`]||0)/15)}%"></div></div>
+    </div>`).join("")}
+  </div>
+  <div class="g3">
+    <div class="card c-sun">
+      <span class="cicon">⚡</span>
+      <div class="clabel">إجمالي PV</div>
+      <div class="cval lg v-sun">${f(pv,0)}<span class="cunit">W</span></div>
+      <div class="csub">المدخل الكلي للإنفرتر</div>
+    </div>
+    <div class="card c-calc">
+      <span class="cicon">📊</span>
+      <div class="clabel">كفاءة التحويل</div>
+      <div class="cval v-calc">${f(eff,1)}<span class="cunit">%</span></div>
+      <div class="bar"><div class="bar-fill" style="width:${eff}%;background:linear-gradient(90deg,#88FFCC,#00AAAA)"></div></div>
+      <div class="csub">AC ÷ PV</div>
+    </div>
+    <div class="card c-sun">
+      <span class="cicon">📅</span>
+      <div class="clabel">إنتاج اليوم</div>
+      <div class="cval v-sun">${f(r.yieldtoday,2)}<span class="cunit">kWh</span></div>
+      <div class="csub">منذ بداية اليوم</div>
+    </div>
+  </div>
+  <div class="tbl">
+    <div class="tbl-title">📋 بيانات PV التفصيلية</div>
+    ${trow("PV1",r.powerdc1,"W","v-sun")}
+    ${trow("PV2",r.powerdc2,"W","v-sun")}
+    ${trow("PV3",r.powerdc3,"W","v-sun")}
+    ${trow("PV4",r.powerdc4,"W","v-sun")}
+    ${trow("الإجمالي",pv,"W","v-sun")}
+    ${trow("طاقة AC الخارجة",r.acpower,"W","v-sun")}
+    ${trow("كفاءة التحويل",eff,"%","v-calc")}
+    ${trow("إنتاج اليوم",r.yieldtoday,"kWh","v-sun")}
+    ${trow("إجمالي الإنتاج",r.yieldtotal,"kWh","v-sun")}
+  </div>`;
+}
+
+function buildGrid(r){
+  const fp=r.feedinpower||0, fm2=r.feedinpowerM2||0;
+  return`
+  <div class="sec">🔌 تفاصيل الشبكة</div>
+  <div class="g3">
+    <div class="card c-grid">
+      <span class="cicon">🔌</span>
+      <div class="clabel">قدرة الشبكة</div>
+      <div class="cval lg v-grid">${f(Math.abs(fp),0)}<span class="cunit">W</span></div>
+      <div class="csub">${fp>0?"تصدير للشبكة ⬆":fp<0?"استيراد من الشبكة ⬇":"لا تبادل"}</div>
+    </div>
+    <div class="card c-grid">
+      <span class="cicon">📊</span>
+      <div class="clabel">عداد 2 (M2)</div>
+      <div class="cval v-grid">${f(Math.abs(fm2),0)}<span class="cunit">W</span></div>
+      <div class="csub">${fm2>0?"تصدير ⬆":fm2<0?"استيراد ⬇":"—"}</div>
+    </div>
+    <div class="card c-grid">
+      <span class="cicon">⚡</span>
+      <div class="clabel">طاقة AC</div>
+      <div class="cval v-grid">${f(r.acpower,0)}<span class="cunit">W</span></div>
+      <div class="csub">إخراج الإنفرتر</div>
+    </div>
+  </div>
+  <div class="g3">
+    <div class="card c-grid">
+      <span class="cicon">🔋</span>
+      <div class="clabel">AC الطور 1</div>
+      <div class="cval v-grid sm">${f(r.pac1,0)}<span class="cunit">W</span></div>
+      <div class="csub">${f(r.vac1,1)} V / ${f(r.iac1,2)} A / ${f(r.fac1,2)} Hz</div>
+    </div>
+    <div class="card c-grid">
+      <span class="cicon">🔋</span>
+      <div class="clabel">AC الطور 2</div>
+      <div class="cval v-grid sm">${f(r.pac2,0)}<span class="cunit">W</span></div>
+      <div class="csub">${f(r.vac2,1)} V / ${f(r.iac2,2)} A / ${f(r.fac2,2)} Hz</div>
+    </div>
+    <div class="card c-grid">
+      <span class="cicon">🔋</span>
+      <div class="clabel">AC الطور 3</div>
+      <div class="cval v-grid sm">${f(r.pac3,0)}<span class="cunit">W</span></div>
+      <div class="csub">${f(r.vac3,1)} V / ${f(r.iac3,2)} A / ${f(r.fac3,2)} Hz</div>
+    </div>
+  </div>
+  <div class="tbl">
+    <div class="tbl-title">📋 طاقة الشبكة الكلية</div>
+    ${trow("تصدير للشبكة (إجمالي)",r.feedinenergy,"kWh","v-grid")}
+    ${trow("استيراد من الشبكة (إجمالي)",r.consumeenergy,"kWh","v-grid")}
+    ${trow("تصدير عداد 2 (إجمالي)",r.feedinenergyM2,"kWh","v-grid")}
+    ${trow("استيراد عداد 2 (إجمالي)",r.consumeenergyM2,"kWh","v-grid")}
+    ${trow("فولتية AC1",r.vac1,"V","v-grid")}
+    ${trow("تيار AC1",r.iac1,"A","v-grid")}
+    ${trow("تردد AC1",r.fac1,"Hz","v-grid")}
+  </div>`;
+}
+
+function buildEPS(r){
+  return`
+  <div class="sec">🏠 نظام EPS (Emergency Power Supply)</div>
+  <div class="g3">
+    <div class="card c-eps">
+      <span class="cicon">🏠</span>
+      <div class="clabel">EPS الطور A</div>
+      <div class="cval v-eps">${f(r.peps1,0)}<span class="cunit">W</span></div>
+      <div class="csub">${f(r.veps1,1)} V / ${f(r.ieps1,2)} A</div>
+    </div>
+    <div class="card c-eps">
+      <span class="cicon">🏠</span>
+      <div class="clabel">EPS الطور B</div>
+      <div class="cval v-eps">${f(r.peps2,0)}<span class="cunit">W</span></div>
+      <div class="csub">${f(r.veps2,1)} V / ${f(r.ieps2,2)} A</div>
+    </div>
+    <div class="card c-eps">
+      <span class="cicon">🏠</span>
+      <div class="clabel">EPS الطور C</div>
+      <div class="cval v-eps">${f(r.peps3,0)}<span class="cunit">W</span></div>
+      <div class="csub">${f(r.veps3,1)} V / ${f(r.ieps3,2)} A</div>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="card c-eps">
+      <span class="cicon">🔁</span>
+      <div class="clabel">تردد EPS</div>
+      <div class="cval v-eps">${f(r.epsfreq,2)}<span class="cunit">Hz</span></div>
+    </div>
+    <div class="card c-eps">
+      <span class="cicon">⚡</span>
+      <div class="clabel">إجمالي EPS</div>
+      <div class="cval v-eps">${f((r.peps1||0)+(r.peps2||0)+(r.peps3||0),0)}<span class="cunit">W</span></div>
+      <div class="csub">مجموع الأطوار</div>
+    </div>
+  </div>
+  <div class="tbl">
+    <div class="tbl-title">📋 بيانات EPS التفصيلية</div>
+    ${trow("طاقة EPS A",r.peps1,"W","v-eps")}
+    ${trow("فولتية EPS A",r.veps1,"V","v-eps")}
+    ${trow("تيار EPS A",r.ieps1,"A","v-eps")}
+    ${trow("طاقة EPS B",r.peps2,"W","v-eps")}
+    ${trow("فولتية EPS B",r.veps2,"V","v-eps")}
+    ${trow("تيار EPS B",r.ieps2,"A","v-eps")}
+    ${trow("طاقة EPS C",r.peps3,"W","v-eps")}
+    ${trow("تردد EPS",r.epsfreq,"Hz","v-eps")}
+  </div>`;
+}
+
+function buildStats(r){
+  const pv=(r.powerdc1||0)+(r.powerdc2||0);
+  const selfUse=pv>0?Math.min(100,((pv-Math.max(0,r.feedinpower||0))/pv*100)):0;
+  const invType=INV_TYPE[r.inverterType]||("نوع "+r.inverterType);
+  const st=STATUS[+r.inverterStatus]||{l:`حالة ${r.inverterStatus}`};
+  const tc=tempColor(r.batTemperature);
+  return`
+  <div class="sec">📊 الإحصائيات والمعلومات الكاملة</div>
+  <div class="g3">
+    <div class="card c-sun">
+      <span class="cicon">📅</span>
+      <div class="clabel">إنتاج اليوم</div>
+      <div class="cval lg v-sun">${f(r.yieldtoday,2)}<span class="cunit">kWh</span></div>
+    </div>
+    <div class="card c-sun">
+      <span class="cicon">📦</span>
+      <div class="clabel">إجمالي الإنتاج</div>
+      <div class="cval lg v-sun">${f(r.yieldtotal,1)}<span class="cunit">kWh</span></div>
+    </div>
+    <div class="card c-calc">
+      <span class="cicon">♻️</span>
+      <div class="clabel">الاستهلاك الذاتي</div>
+      <div class="cval lg v-calc">${f(selfUse,1)}<span class="cunit">%</span></div>
+    </div>
+  </div>
+  <div class="tbl">
+    <div class="tbl-title">🔧 معلومات الجهاز</div>
+    ${trowTxt("نوع الإنفرتر",invType,"v-gray")}
+    ${trowTxt("رقم الإنفرتر","10JP00011F900A","v-gray")}
+    ${trowTxt("رقم الدونكل","SNWVR2LQ3E","v-gray")}
+    ${trowTxt("الحالة",st.l,"v-gray")}
+    ${trowTxt("وقت الرفع",r.uploadTime||"—","v-gray")}
+    ${trowTxt("UTC",r.utcDateTime||"—","v-gray")}
+  </div>
+  <div class="tbl">
+    <div class="tbl-title">⚡ ملخص الطاقة الكامل</div>
+    ${trow("تصدير للشبكة (كلي)",r.feedinenergy,"kWh","v-grid")}
+    ${trow("استيراد من الشبكة (كلي)",r.consumeenergy,"kWh","v-grid")}
+    ${trow("تصدير عداد M2",r.feedinenergy,"kWh","v-grid")}
+    ${trow("إنتاج اليوم",r.yieldtoday,"kWh","v-sun")}
+    ${trow("إجمالي الإنتاج",r.yieldtotal,"kWh","v-sun")}
+    ${trow("SOC البطارية",r.soc,"%","v-bat")}
+    ${trow("دورات الشحن",r.batcycle,"","v-bat")}
+    ${trow("درجة حرارة البطارية",r.batTemperature,"°C",tc=="var(--red)"?"v-red":tc.includes("FF")?"v-sun":"v-bat")}
+  </div>`;
+}
+
+function trow(name,val,unit,cls){
+  const v=val!=null&&val!==undefined&&!isNaN(+val)?(+val).toFixed(unit=="kWh"?2:unit=="%"?1:1):val!=null?val:"—";
+  return`<div class="trow"><span class="tname">${name}</span><span class="tval ${cls}">${v}<small>${unit}</small></span></div>`;
+}
+function trowTxt(name,val,cls){
+  return`<div class="trow"><span class="tname">${name}</span><span class="tval ${cls}" style="font-family:'Cairo',sans-serif;font-size:13px">${val||"—"}</span></div>`;
+}
+
+function renderAll(r){
+  let html="";
+  if(currentTab==="overview") html=buildOverview(r);
+  else if(currentTab==="battery") html=buildBattery(r);
+  else if(currentTab==="pv") html=buildPV(r);
+  else if(currentTab==="grid") html=buildGrid(r);
+  else if(currentTab==="eps") html=buildEPS(r);
+  else if(currentTab==="stats") html=buildStats(r);
+  document.getElementById("main").innerHTML=html;
+  document.getElementById("uploadT").textContent=r.uploadTime||"—";
 }
 
 async function load(){
   const btn=document.getElementById("rbtn"),dot=document.getElementById("dot"),stxt=document.getElementById("stxt");
   btn.disabled=true; btn.textContent="⏳ جاري...";
-  dot.className="dot"; stxt.textContent="جاري الاتصال...";
+  dot.className="dot"; stxt.textContent="جاري...";
   try{
-    const res = await fetch(PROXY, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "tokenId": TOKEN,
-        "x-cors-headers": JSON.stringify({"tokenId": TOKEN})
-      },
-      body: JSON.stringify({ wifiSn: WIFI_SN })
+    const res=await fetch(PROXY,{
+      method:"POST",
+      headers:{"Content-Type":"application/json","tokenId":TOKEN,"x-cors-headers":JSON.stringify({"tokenId":TOKEN})},
+      body:JSON.stringify({wifiSn:WIFI_SN})
     });
     if(!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
-    if(!json.success) throw new Error(json.exception || "فشل الاتصال");
-    document.getElementById("main").innerHTML = render(json.result);
+    const json=await res.json();
+    if(!json.success) throw new Error(json.exception||"فشل الاتصال");
+    lastData=json.result;
+    renderAll(lastData);
     dot.className="dot ok"; stxt.textContent="متصل";
-    document.getElementById("lastUp").textContent = new Date().toLocaleTimeString("ar-IQ");
+    document.getElementById("lastUp").textContent=new Date().toLocaleTimeString("ar-IQ");
   }catch(e){
-    document.getElementById("main").innerHTML=`
-      <div class="errbox">
-        ⚠️ تعذّر الاتصال<br>
-        <span style="font-size:12px;opacity:.7">${e.message}</span>
-      </div>`;
+    document.getElementById("main").innerHTML=`<div class="errbox">⚠️ تعذّر الاتصال<br><span style="font-size:12px;opacity:.7">${e.message}</span></div>`;
     dot.className="dot err"; stxt.textContent="خطأ";
   }
   btn.disabled=false; btn.textContent="🔄 تحديث";
 }
 load();
-setInterval(load, 5*60*1000);
+setInterval(load,5*60*1000);
 </script>
 </body>
 </html>
