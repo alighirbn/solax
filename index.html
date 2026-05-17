@@ -160,6 +160,19 @@
     .flow-grid{grid-template-columns:1fr auto 1fr;}
     .fnode{min-width:70px;padding:8px 10px;}
   }
+
+  /* UNIT TOGGLE */
+  .unit-toggle{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:var(--s2);border:1px solid rgba(0,212,255,.25);border-radius:8px;
+    padding:5px 12px;cursor:pointer;transition:.2s;gap:0;
+    font-family:'Orbitron',monospace;
+  }
+  .unit-toggle:hover{border-color:rgba(0,212,255,.5);background:rgba(0,212,255,.08);}
+  .unit-toggle.amp{border-color:rgba(0,255,136,.35);background:rgba(0,255,136,.06);}
+  .unit-toggle span{font-size:16px;font-weight:900;color:var(--sun);line-height:1;transition:.2s;}
+  .unit-toggle.amp span{color:var(--bat);}
+  .unit-toggle small{font-size:9px;color:var(--dim);margin-top:1px;font-family:'Cairo',sans-serif;}
 </style>
 </head>
 <body>
@@ -167,6 +180,10 @@
   <header>
     <div class="logo">SOLAR<span>X</span><small>X1-Lite-12K-LV • SN: 10JP00011F900A</small></div>
     <div class="hright">
+      <button class="unit-toggle" id="unitBtn" onclick="toggleUnit()" title="تبديل وحدة القياس">
+        <span id="unitLabel">W</span>
+        <small id="unitSub">واط</small>
+      </button>
       <div class="hbadge"><div class="dot" id="dot"></div><span id="stxt">جاري...</span></div>
     </div>
   </header>
@@ -231,6 +248,42 @@ const fkw=(v)=>{
 
 let currentTab="overview";
 let lastData=null;
+let unitMode="W"; // "W" or "A"
+const VOLT=230; // fallback voltage for W->A conversion
+
+function toggleUnit(){
+  unitMode = unitMode==="W" ? "A" : "W";
+  const btn=document.getElementById("unitBtn");
+  const lbl=document.getElementById("unitLabel");
+  const sub=document.getElementById("unitSub");
+  if(unitMode==="A"){
+    btn.classList.add("amp"); lbl.textContent="A"; sub.textContent="أمبير";
+  } else {
+    btn.classList.remove("amp"); lbl.textContent="W"; sub.textContent="واط";
+  }
+  if(lastData) renderAll(lastData);
+}
+
+// Convert power W to display value based on current unit
+// volt: the voltage to use for W->A calc
+function pw(watts, volt){
+  if(watts==null||isNaN(+watts)) return {v:"—",u:unitMode};
+  const w=+watts;
+  if(unitMode==="W") return {v:f(w,0), u:"W"};
+  const v2 = (volt&&!isNaN(+volt)&&+volt>0) ? +volt : VOLT;
+  return {v:f(Math.abs(w)/v2, 2), u:"A"};
+}
+function pwStr(watts, volt){
+  const r=pw(watts,volt);
+  return `${r.v}<span class="cunit">${r.u}</span>`;
+}
+function pwVal(watts, volt){
+  const r=pw(watts,volt);
+  return r.v;
+}
+function pwUnit(){
+  return unitMode;
+}
 
 function switchTab(tab){
   currentTab=tab;
@@ -266,8 +319,8 @@ function buildOverview(r){
   return`
   <div class="hero">
     <div class="sun-wrap"><div class="sun-inner">
-      <div class="pv-val">${f(pv,0)}</div>
-      <div class="pv-unit">WATT • PV</div>
+      <div class="pv-val">${pwVal(pv, lastData&&lastData.vac1)}</div>
+      <div class="pv-unit">${pwUnit()} • PV</div>
     </div></div>
     <div style="font-size:12px;color:var(--dim);margin-bottom:4px">إجمالي طاقة الألواح الشمسية</div>
     <div class="pill ${st.c}">${st.l}</div>
@@ -277,7 +330,7 @@ function buildOverview(r){
     <div class="card c-sun">
       <span class="cicon">⚡</span>
       <div class="clabel">طاقة AC</div>
-      <div class="cval v-sun">${f(r.acpower,0)}<span class="cunit">W</span></div>
+      <div class="cval v-sun">${pwStr(r.acpower, r.vac1)}</div>
       <div class="csub">الإخراج الفعلي</div>
     </div>
     <div class="card c-bat">
@@ -290,13 +343,13 @@ function buildOverview(r){
     <div class="card c-grid">
       <span class="cicon">🔌</span>
       <div class="clabel">الشبكة</div>
-      <div class="cval v-grid">${f(Math.abs(fp),0)}<span class="cunit">W</span></div>
+      <div class="cval v-grid">${pwStr(Math.abs(fp), r.vac1)}</div>
       <div class="csub">${fp>0?"تصدير ⬆":fp<0?"استيراد ⬇":"—"}</div>
     </div>
     <div class="card c-eps">
       <span class="cicon">🏠</span>
       <div class="clabel">EPS حمل</div>
-      <div class="cval v-eps">${f(r.peps1??r.peps2??r.peps3,0)}<span class="cunit">W</span></div>
+      <div class="cval v-eps">${pwStr(r.peps1??r.peps2??r.peps3, r.veps1||230)}</div>
       <div class="csub">الطاقة الداخلية</div>
     </div>
   </div>
@@ -308,26 +361,26 @@ function buildOverview(r){
       <div class="fnode" style="border-color:rgba(255,184,0,.3)">
         <span class="fnode-icon">☀️</span>
         <div class="fnode-label">الألواح</div>
-        <div class="fnode-val v-sun">${f(pv,0)}W</div>
+        <div class="fnode-val v-sun">${pwVal(pv,r.vac1)}${pwUnit()}</div>
       </div>
       <div class="farrow ${pv>0?'active-sun':''}">→</div>
       <div class="center-node"><span style="font-size:16px">⚙️</span><b>INV</b></div>
       <div class="fnode" style="border-color:rgba(0,255,136,.3)">
         <span class="fnode-icon">🔋</span>
         <div class="fnode-label">البطارية</div>
-        <div class="fnode-val v-bat">${bp>0?"↑":bp<0?"↓":""}${f(Math.abs(bp),0)}W</div>
+        <div class="fnode-val v-bat">${bp>0?"↑":bp<0?"↓":""}${pwVal(Math.abs(bp),r.batVoltage)}${pwUnit()}</div>
       </div>
       <div class="farrow ${bp!=0?'active-bat':''}">↔</div>
       <div style="grid-column:3;grid-row:2;display:flex;flex-direction:column;gap:8px;align-items:center">
         <div class="fnode" style="border-color:rgba(0,212,255,.3)">
           <span class="fnode-icon">🔌</span>
           <div class="fnode-label">الشبكة</div>
-          <div class="fnode-val v-grid">${fp>0?"↑":fp<0?"↓":""}${f(Math.abs(fp),0)}W</div>
+          <div class="fnode-val v-grid">${fp>0?"↑":fp<0?"↓":""}${pwVal(Math.abs(fp),r.vac1)}${pwUnit()}</div>
         </div>
         <div class="fnode" style="border-color:rgba(255,119,68,.3)">
           <span class="fnode-icon">🏠</span>
           <div class="fnode-label">الحمل</div>
-          <div class="fnode-val v-eps">${f(r.peps1??0,0)}W</div>
+          <div class="fnode-val v-eps">${pwVal(r.peps1??0,r.veps1||230)}${pwUnit()}</div>
         </div>
       </div>
     </div>
@@ -344,8 +397,8 @@ function buildOverview(r){
     <div class="card c-sun">
       <span class="cicon">☀️</span>
       <div class="clabel">PV1 + PV2</div>
-      <div class="cval v-sun sm">${f(r.powerdc1,0)} + ${f(r.powerdc2,0)}<span class="cunit">W</span></div>
-      <div class="csub">المجموع: ${f(pv,0)} W</div>
+      <div class="cval v-sun sm">${pwVal(r.powerdc1,r.vac1)} + ${pwVal(r.powerdc2,r.vac1)}<span class="cunit">${pwUnit()}</span></div>
+      <div class="csub">المجموع: ${pwVal(pv,r.vac1)} ${pwUnit()}</div>
     </div>
     <div class="card c-info">
       <span class="cicon">🕒</span>
@@ -373,7 +426,7 @@ function buildBattery(r){
     <div class="card c-bat">
       <span class="cicon">⚡</span>
       <div class="clabel">طاقة البطارية</div>
-      <div class="cval v-bat">${f(Math.abs(bp),0)}<span class="cunit">W</span></div>
+      <div class="cval v-bat">${pwStr(Math.abs(bp), r.batVoltage)}</div>
       <div class="csub">${bp>0?"شحن ⬆":bp<0?"تفريغ ⬇":"ثابت"}</div>
     </div>
     <div class="card c-bat">
@@ -416,7 +469,7 @@ function buildBattery(r){
   <div class="tbl">
     <div class="tbl-title">📋 جميع بيانات البطارية</div>
     ${trow("SOC",r.soc,"%","v-bat")}
-    ${trow("الطاقة",bp,"W","v-bat")}
+    ${trow("الطاقة",bp,pwUnit(),"v-bat")}
     ${trow("الفولتية",bv,"V","v-bat")}
     ${trow("التيار",bi,"A","v-bat")}
     ${trow("درجة الحرارة",bt,"°C",bt>55?"v-red":bt>40?"v-sun":"v-bat")}
@@ -435,7 +488,7 @@ function buildPV(r){
     <div class="card c-sun">
       <span class="cicon">☀️</span>
       <div class="clabel">PV${i}</div>
-      <div class="cval v-sun">${f(r[`powerdc${i}`],0)}<span class="cunit">W</span></div>
+      <div class="cval v-sun">${pwStr(r[`powerdc${i}`], r.vac1)}</div>
       <div class="bar"><div class="bar-fill bar-sun" style="width:${Math.min(100,(r[`powerdc${i}`]||0)/15)}%"></div></div>
     </div>`).join("")}
   </div>
@@ -443,7 +496,7 @@ function buildPV(r){
     <div class="card c-sun">
       <span class="cicon">⚡</span>
       <div class="clabel">إجمالي PV</div>
-      <div class="cval lg v-sun">${f(pv,0)}<span class="cunit">W</span></div>
+      <div class="cval lg v-sun">${pwStr(pv, r.vac1)}</div>
       <div class="csub">المدخل الكلي للإنفرتر</div>
     </div>
     <div class="card c-calc">
@@ -462,12 +515,12 @@ function buildPV(r){
   </div>
   <div class="tbl">
     <div class="tbl-title">📋 بيانات PV التفصيلية</div>
-    ${trow("PV1",r.powerdc1,"W","v-sun")}
-    ${trow("PV2",r.powerdc2,"W","v-sun")}
-    ${trow("PV3",r.powerdc3,"W","v-sun")}
-    ${trow("PV4",r.powerdc4,"W","v-sun")}
-    ${trow("الإجمالي",pv,"W","v-sun")}
-    ${trow("طاقة AC الخارجة",r.acpower,"W","v-sun")}
+    ${trow("PV1",r.powerdc1,pwUnit(),"v-sun")}
+    ${trow("PV2",r.powerdc2,pwUnit(),"v-sun")}
+    ${trow("PV3",r.powerdc3,pwUnit(),"v-sun")}
+    ${trow("PV4",r.powerdc4,pwUnit(),"v-sun")}
+    ${trow("الإجمالي",pv,pwUnit(),"v-sun")}
+    ${trow("طاقة AC الخارجة",r.acpower,pwUnit(),"v-sun")}
     ${trow("كفاءة التحويل",eff,"%","v-calc")}
     ${trow("إنتاج اليوم",r.yieldtoday,"kWh","v-sun")}
     ${trow("إجمالي الإنتاج",r.yieldtotal,"kWh","v-sun")}
@@ -482,19 +535,19 @@ function buildGrid(r){
     <div class="card c-grid">
       <span class="cicon">🔌</span>
       <div class="clabel">قدرة الشبكة</div>
-      <div class="cval lg v-grid">${f(Math.abs(fp),0)}<span class="cunit">W</span></div>
+      <div class="cval lg v-grid">${pwStr(Math.abs(fp), r.vac1)}</div>
       <div class="csub">${fp>0?"تصدير للشبكة ⬆":fp<0?"استيراد من الشبكة ⬇":"لا تبادل"}</div>
     </div>
     <div class="card c-grid">
       <span class="cicon">📊</span>
       <div class="clabel">عداد 2 (M2)</div>
-      <div class="cval v-grid">${f(Math.abs(fm2),0)}<span class="cunit">W</span></div>
+      <div class="cval v-grid">${pwStr(Math.abs(fm2), r.vac1)}</div>
       <div class="csub">${fm2>0?"تصدير ⬆":fm2<0?"استيراد ⬇":"—"}</div>
     </div>
     <div class="card c-grid">
       <span class="cicon">⚡</span>
       <div class="clabel">طاقة AC</div>
-      <div class="cval v-grid">${f(r.acpower,0)}<span class="cunit">W</span></div>
+      <div class="cval v-grid">${pwStr(r.acpower, r.vac1)}</div>
       <div class="csub">إخراج الإنفرتر</div>
     </div>
   </div>
@@ -502,19 +555,19 @@ function buildGrid(r){
     <div class="card c-grid">
       <span class="cicon">🔋</span>
       <div class="clabel">AC الطور 1</div>
-      <div class="cval v-grid sm">${f(r.pac1,0)}<span class="cunit">W</span></div>
+      <div class="cval v-grid sm">${pwStr(r.pac1, r.vac1)}</div>
       <div class="csub">${f(r.vac1,1)} V / ${f(r.iac1,2)} A / ${f(r.fac1,2)} Hz</div>
     </div>
     <div class="card c-grid">
       <span class="cicon">🔋</span>
       <div class="clabel">AC الطور 2</div>
-      <div class="cval v-grid sm">${f(r.pac2,0)}<span class="cunit">W</span></div>
+      <div class="cval v-grid sm">${pwStr(r.pac2, r.vac2)}</div>
       <div class="csub">${f(r.vac2,1)} V / ${f(r.iac2,2)} A / ${f(r.fac2,2)} Hz</div>
     </div>
     <div class="card c-grid">
       <span class="cicon">🔋</span>
       <div class="clabel">AC الطور 3</div>
-      <div class="cval v-grid sm">${f(r.pac3,0)}<span class="cunit">W</span></div>
+      <div class="cval v-grid sm">${pwStr(r.pac3, r.vac3)}</div>
       <div class="csub">${f(r.vac3,1)} V / ${f(r.iac3,2)} A / ${f(r.fac3,2)} Hz</div>
     </div>
   </div>
@@ -537,19 +590,19 @@ function buildEPS(r){
     <div class="card c-eps">
       <span class="cicon">🏠</span>
       <div class="clabel">EPS الطور A</div>
-      <div class="cval v-eps">${f(r.peps1,0)}<span class="cunit">W</span></div>
+      <div class="cval v-eps">${pwStr(r.peps1, r.veps1)}</div>
       <div class="csub">${f(r.veps1,1)} V / ${f(r.ieps1,2)} A</div>
     </div>
     <div class="card c-eps">
       <span class="cicon">🏠</span>
       <div class="clabel">EPS الطور B</div>
-      <div class="cval v-eps">${f(r.peps2,0)}<span class="cunit">W</span></div>
+      <div class="cval v-eps">${pwStr(r.peps2, r.veps2)}</div>
       <div class="csub">${f(r.veps2,1)} V / ${f(r.ieps2,2)} A</div>
     </div>
     <div class="card c-eps">
       <span class="cicon">🏠</span>
       <div class="clabel">EPS الطور C</div>
-      <div class="cval v-eps">${f(r.peps3,0)}<span class="cunit">W</span></div>
+      <div class="cval v-eps">${pwStr(r.peps3, r.veps3)}</div>
       <div class="csub">${f(r.veps3,1)} V / ${f(r.ieps3,2)} A</div>
     </div>
   </div>
@@ -562,19 +615,19 @@ function buildEPS(r){
     <div class="card c-eps">
       <span class="cicon">⚡</span>
       <div class="clabel">إجمالي EPS</div>
-      <div class="cval v-eps">${f((r.peps1||0)+(r.peps2||0)+(r.peps3||0),0)}<span class="cunit">W</span></div>
+      <div class="cval v-eps">${pwStr((r.peps1||0)+(r.peps2||0)+(r.peps3||0), r.veps1||230)}</div>
       <div class="csub">مجموع الأطوار</div>
     </div>
   </div>
   <div class="tbl">
     <div class="tbl-title">📋 بيانات EPS التفصيلية</div>
-    ${trow("طاقة EPS A",r.peps1,"W","v-eps")}
+    ${trow("طاقة EPS A",r.peps1,pwUnit(),"v-eps")}
     ${trow("فولتية EPS A",r.veps1,"V","v-eps")}
     ${trow("تيار EPS A",r.ieps1,"A","v-eps")}
-    ${trow("طاقة EPS B",r.peps2,"W","v-eps")}
+    ${trow("طاقة EPS B",r.peps2,pwUnit(),"v-eps")}
     ${trow("فولتية EPS B",r.veps2,"V","v-eps")}
     ${trow("تيار EPS B",r.ieps2,"A","v-eps")}
-    ${trow("طاقة EPS C",r.peps3,"W","v-eps")}
+    ${trow("طاقة EPS C",r.peps3,pwUnit(),"v-eps")}
     ${trow("تردد EPS",r.epsfreq,"Hz","v-eps")}
   </div>`;
 }
@@ -627,7 +680,18 @@ function buildStats(r){
 }
 
 function trow(name,val,unit,cls){
-  const v=val!=null&&val!==undefined&&!isNaN(+val)?(+val).toFixed(unit=="kWh"?2:unit=="%"?1:1):val!=null?val:"—";
+  let v;
+  if(val!=null&&val!==undefined&&!isNaN(+val)){
+    if((unit==="W"||unit==="A")&&unitMode==="A"){
+      // convert watts to amps using VOLT
+      v=(Math.abs(+val)/VOLT).toFixed(2);
+      unit="A";
+    } else {
+      v=(+val).toFixed(unit==="kWh"?2:unit==="%"?1:1);
+    }
+  } else {
+    v=val!=null?val:"—";
+  }
   return`<div class="trow"><span class="tname">${name}</span><span class="tval ${cls}">${v}<small>${unit}</small></span></div>`;
 }
 function trowTxt(name,val,cls){
