@@ -540,10 +540,10 @@
 
 <script>
   // ═══════════════════════════════════════════════
-  //  CONFIG — edit these two values if needed
+  //  CONFIG
   // ═══════════════════════════════════════════════
-  const TOKEN_ID = "202603160831272691378815";
-  const WIFI_SN  = "SNWVR2LQ3E";
+  const PROXY_URL = "https://solax-proxy.alighirbn.workers.dev/";
+  const WIFI_SN   = "SNWVR2LQ3E";
 
   // Assumed voltages for amp calculation
   const AC_VOLTAGE   = 220;   // V — change to 230 for EU
@@ -589,12 +589,9 @@
     errorDiv.style.display = 'none';
 
     try {
-      const res = await fetch("https://global.solaxcloud.com/api/v2/dataAccess/realtimeInfo/get", {
+      const res = await fetch(PROXY_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "tokenId": TOKEN_ID
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ wifiSn: WIFI_SN })
       });
 
